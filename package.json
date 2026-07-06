@@ -1,0 +1,21 @@
+{
+  "name": "weight-coach",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Adaptiver Gewichts- & Körperkompositions-Tracker mit wöchentlicher Kalorien-Anpassung. Speichert in Google Sheets (Service-Account) oder lokal.",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "check": "node scripts/check-sheets.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@googleapis/sheets": "^9.0.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "google-auth-library": "^9.15.0"
+  }
+}

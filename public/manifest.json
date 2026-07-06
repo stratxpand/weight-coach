@@ -1,0 +1,14 @@
+{
+  "name": "Weight Coach",
+  "short_name": "Coach",
+  "description": "Adaptives Kalorien-Coaching auf Basis deiner täglichen Messwerte.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0A0C10",
+  "theme_color": "#0A0C10",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Weight Coach</title>
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#0A0C10" />
+  <link rel="icon" href="/icon.svg" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Weight Coach" />
+  <link rel="apple-touch-icon" href="/icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+
+  <!-- ── Kopf ─────────────────────────────────────────────────── -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand__mark" aria-hidden="true"></span>
+      <div class="brand__text">
+        <span class="brand__name">WEIGHT&nbsp;COACH</span>
+        <span class="brand__sub" id="brandSub">Adaptives Kalorien-Coaching</span>
+      </div>
+    </div>
+    <div class="topbar__meta">
+      <span class="pill pill--ghost" id="backendPill" title="Datenquelle">–</span>
+      <span class="pill pill--ghost" id="datePill">–</span>
+      <button class="btn btn--primary" id="openEntry" type="button">
+        <span class="btn__plus">＋</span> Heute eintragen
+      </button>
+      <button class="btn btn--icon" id="openSettings" type="button" aria-label="Einstellungen" title="Einstellungen">⚙</button>
+    </div>
+  </header>
+
+  <main class="wrap" id="app" hidden>
+
+    <!-- ── Signature: Coaching-Direktive ──────────────────────── -->
+    <section class="hero">
+      <div class="hero__glow" aria-hidden="true"></div>
+      <div class="hero__main">
+        <p class="eyebrow">Empfehlung · <span id="heroWeekLabel">Woche —</span></p>
+        <h1 class="hero__lead">Iss diese Woche</h1>
+        <div class="hero__figure">
+          <span class="hero__kcal" id="heroKcal">––––</span>
+          <span class="hero__unit">kcal<span class="hero__unit-sub">/&#8202;Tag</span></span>
+          <span class="delta" id="heroDelta" data-dir="flat">–</span>
+        </div>
+        <p class="hero__rationale" id="heroRationale">Lade Analyse …</p>
+      </div>
+
+      <div class="hero__side">
+        <div class="gaugecard">
+          <div class="gaugecard__head">
+            <span class="eyebrow">Wochen-Tempo</span>
+            <span class="gaugecard__status" id="scheduleStatus">–</span>
+          </div>
+          <div id="gauge" class="gauge"></div>
+          <div class="gaugecard__legend">
+            <span>zu langsam</span><span>Ziel</span><span>zu schnell</span>
+          </div>
+        </div>
+        <div class="hero__stats">
+          <div class="ministat">
+            <span class="ministat__label">Erhaltungsbedarf</span>
+            <span class="ministat__value" id="statMaintenance">–</span>
+          </div>
+          <div class="ministat">
+            <span class="ministat__label">Ziel erreicht ca.</span>
+            <span class="ministat__value" id="statEta">–</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Metrik-Kacheln ─────────────────────────────────────── -->
+    <section class="tiles" id="tiles"></section>
+
+    <!-- ── Fortschritt zum Ziel ───────────────────────────────── -->
+    <section class="panel progresspanel">
+      <div class="progresspanel__row">
+        <div class="progresspanel__end">
+          <span class="eyebrow">Start</span>
+          <span class="progresspanel__num" id="progStart">–</span>
+        </div>
+        <div class="progresspanel__track">
+          <div class="progresspanel__meta">
+            <span id="progNow">–</span>
+            <span class="muted" id="progToGo">–</span>
+          </div>
+          <div class="progressbar"><div class="progressbar__fill" id="progFill"></div><span class="progressbar__dot" id="progDot"></span></div>
+        </div>
+        <div class="progresspanel__end progresspanel__end--goal">
+          <span class="eyebrow">Ziel</span>
+          <span class="progresspanel__num" id="progGoal">–</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Gewichts-Chart ─────────────────────────────────────── -->
+    <section class="panel">
+      <div class="panel__head">
+        <div>
+          <span class="eyebrow">Verlauf</span>
+          <h2 class="panel__title">Gewicht &amp; Trend</h2>
+        </div>
+        <div class="legend" id="weightLegend"></div>
+      </div>
+      <div class="chart chart--tall" id="weightChart"></div>
+    </section>
+
+    <!-- ── Komposition + Kalorien-Timeline ────────────────────── -->
+    <div class="grid2">
+      <section class="panel">
+        <div class="panel__head">
+          <div>
+            <span class="eyebrow">Körperzusammensetzung</span>
+            <h2 class="panel__title">Fett · Muskel · Wasser</h2>
+          </div>
+          <div class="legend" id="compLegend"></div>
+        </div>
+        <div class="chart" id="compChart"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel__head">
+          <div>
+            <span class="eyebrow">Anpassung</span>
+            <h2 class="panel__title">Kalorienziel je Woche</h2>
+          </div>
+          <div class="legend" id="calLegend"></div>
+        </div>
+        <div class="chart" id="calChart"></div>
+      </section>
+    </div>
+
+    <!-- ── Wochenprotokoll ────────────────────────────────────── -->
+    <section class="panel">
+      <div class="panel__head">
+        <div>
+          <span class="eyebrow">Protokoll</span>
+          <h2 class="panel__title">Wöchentliche Auswertung</h2>
+        </div>
+      </div>
+      <div class="tablewrap">
+        <table class="wtable" id="weekTable">
+          <thead>
+            <tr>
+              <th>Woche</th><th>Zeitraum</th><th class="num">Trend</th>
+              <th class="num">Ist-Tempo</th><th class="num">Erhaltung</th>
+              <th class="num">Ziel-kcal</th><th class="num">Δ</th>
+            </tr>
+          </thead>
+          <tbody id="weekTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <span id="footNote">Modell: nachlauffreie Trend-Regression · adaptives Erhaltungs-Tracking · Rechnung mit <span id="footKcalKg">7700</span> kcal/kg</span>
+    </footer>
+  </main>
+
+  <!-- Ladezustand -->
+  <div class="loader" id="loader"><div class="loader__ring"></div><p>Lade deine Daten …</p></div>
+
+  <!-- ── Modal: Eintrag ─────────────────────────────────────── -->
+  <div class="modal" id="entryModal" hidden>
+    <div class="modal__scrim" data-close></div>
+    <div class="modal__card" role="dialog" aria-modal="true" aria-labelledby="entryTitle">
+      <div class="modal__head">
+        <h3 id="entryTitle">Messung eintragen</h3>
+        <button class="btn btn--icon" data-close aria-label="Schließen">✕</button>
+      </div>
+      <form id="entryForm" class="form">
+        <label class="field field--wide">
+          <span class="field__label">Datum</span>
+          <input type="date" name="date" id="entryDate" required />
+        </label>
+        <label class="field">
+          <span class="field__label">Gewicht <em>kg</em></span>
+          <input type="number" name="weight" step="0.1" inputmode="decimal" placeholder="z. B. 98,4" />
+        </label>
+        <label class="field">
+          <span class="field__label">Muskel <em>%</em></span>
+          <input type="number" name="musclePct" step="0.1" inputmode="decimal" placeholder="z. B. 38,6" />
+        </label>
+        <label class="field">
+          <span class="field__label">Fett <em>%</em></span>
+          <input type="number" name="fatPct" step="0.1" inputmode="decimal" placeholder="z. B. 26,1" />
+        </label>
+        <label class="field">
+          <span class="field__label">Wasser <em>%</em></span>
+          <input type="number" name="waterPct" step="0.1" inputmode="decimal" placeholder="z. B. 55,0" />
+        </label>
+        <label class="field field--wide">
+          <span class="field__label">Gegessene Kalorien <em>optional</em></span>
+          <input type="number" name="calories" step="1" inputmode="numeric" placeholder="macht die Schätzung präziser" />
+        </label>
+        <p class="form__hint">Nur ausfüllen, was du gemessen hast – fehlende Werte werden im Trend interpoliert.</p>
+        <div class="form__actions">
+          <button type="button" class="btn btn--ghost" data-close>Abbrechen</button>
+          <button type="submit" class="btn btn--primary">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Modal: Einstellungen ───────────────────────────────── -->
+  <div class="modal" id="settingsModal" hidden>
+    <div class="modal__scrim" data-close></div>
+    <div class="modal__card" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div class="modal__head">
+        <h3 id="settingsTitle">Ziel &amp; Plan</h3>
+        <button class="btn btn--icon" data-close aria-label="Schließen">✕</button>
+      </div>
+      <form id="settingsForm" class="form">
+        <label class="field">
+          <span class="field__label">Startgewicht <em>automatisch</em></span>
+          <input type="number" name="startWeight" step="0.1" readonly title="Wird aus deinem ersten Eintrag übernommen" />
+        </label>
+        <label class="field">
+          <span class="field__label">Zielgewicht <em>kg</em></span>
+          <input type="number" name="goalWeight" step="0.1" />
+        </label>
+        <label class="field">
+          <span class="field__label">Tempo <em>kg/Woche</em></span>
+          <input type="number" name="weeklyRate" step="0.05" />
+        </label>
+        <label class="field">
+          <span class="field__label">Start-Kalorien <em>kcal/Tag</em></span>
+          <input type="number" name="startCalories" step="10" />
+        </label>
+        <label class="field">
+          <span class="field__label">Startdatum</span>
+          <input type="date" name="startDate" />
+        </label>
+
+        <details class="advanced">
+          <summary>Feineinstellungen</summary>
+          <div class="advanced__grid">
+            <label class="field">
+              <span class="field__label">kcal pro kg</span>
+              <input type="number" name="kcalPerKg" step="100" />
+            </label>
+            <label class="field">
+              <span class="field__label">Glättung <em>Tage</em></span>
+              <input type="number" name="trendWindowDays" step="1" />
+            </label>
+            <label class="field">
+              <span class="field__label">Dämpfung <em>0–1</em></span>
+              <input type="number" name="dampening" step="0.1" min="0" max="1" />
+            </label>
+            <label class="field">
+              <span class="field__label">Max. Δ <em>kcal/Woche</em></span>
+              <input type="number" name="maxWeeklyAdjust" step="10" />
+            </label>
+            <label class="field">
+              <span class="field__label">Aufhol-Fenster <em>Wochen</em></span>
+              <input type="number" name="catchUpWeeks" step="1" />
+            </label>
+            <label class="field">
+              <span class="field__label">kcal-Untergrenze</span>
+              <input type="number" name="minCalories" step="50" />
+            </label>
+          </div>
+        </details>
+
+        <div class="form__actions">
+          <button type="button" class="btn btn--ghost" data-close>Abbrechen</button>
+          <button type="submit" class="btn btn--primary">Plan speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
