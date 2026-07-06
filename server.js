@@ -8,6 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createStore } from './lib/store.js';
 import { analyze, DEFAULT_CONFIG } from './lib/analytics.js';
+import { coachAdvice } from './lib/coach.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT) || 5173;
@@ -60,6 +61,21 @@ app.put('/api/config', wrap(async (req, res) => {
 app.get('/api/analysis', wrap(async (_req, res) => {
   const [entries, config] = await Promise.all([store.getEntries(), store.getConfig()]);
   res.json(analyze(entries, config));
+}));
+
+// KI-Coach: Bewertung + konkrete Plan-Anpassungen (via Claude).
+app.post('/api/coach', wrap(async (req, res) => {
+  const [entries, config] = await Promise.all([store.getEntries(), store.getConfig()]);
+  const analysis = analyze(entries, config);
+  const mealPlan = req.body?.mealPlan || null;
+  try {
+    const advice = await coachAdvice({ analysis, mealPlan, config });
+    res.json(advice);
+  } catch (err) {
+    console.error('Coach-Fehler:', err.message);
+    const status = err.code === 'NO_KEY' ? 400 : 502;
+    res.status(status).json({ error: err.message, code: err.code || 'coach_error' });
+  }
 }));
 
 // ── Statisches Frontend ──────────────────────────────────────────────────

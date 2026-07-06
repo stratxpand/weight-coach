@@ -282,6 +282,56 @@ $('#logPlan').addEventListener('click', async () => {
   } catch (err) { toast(err.message, true); }
 });
 
+// ── KI-Coach ─────────────────────────────────────────────────────────────────
+$('#askCoach').addEventListener('click', runCoach);
+
+async function runCoach() {
+  openModal('coachModal');
+  $('#coachBody').innerHTML = `<div class="coach__loading"><div class="loader__ring"></div><p>Analysiere deine Woche &amp; deinen Plan …</p></div>`;
+  try {
+    const advice = await api('/api/coach', { method: 'POST', body: JSON.stringify({ mealPlan: MEAL_PLAN }) });
+    renderCoachResult(advice);
+  } catch (err) {
+    const isKey = /ANTHROPIC_API_KEY/i.test(err.message);
+    $('#coachBody').innerHTML = `<div class="coach__error">
+      <p>${escapeHtml(err.message)}</p>
+      ${isKey ? `<p class="form__hint">Hinterlege deinen Anthropic-API-Schlüssel als Umgebungsvariable <code>ANTHROPIC_API_KEY</code> – lokal in <code>.env</code>, online in den Vercel-Projekteinstellungen.</p>` : ''}
+    </div>`;
+  }
+}
+
+function renderCoachResult(a) {
+  const V = {
+    on_track: { t: 'Auf Kurs', c: 'blue' },
+    eat_more: { t: 'Etwas mehr essen', c: 'green' },
+    eat_less: { t: 'Etwas weniger essen', c: 'rose' },
+  }[a.verdict] || { t: 'Auf Kurs', c: 'blue' };
+  const cur = STATE.config.planCalories ?? MEAL_PLAN.totalKcal;
+  const changed = a.newPlanCalories && a.newPlanCalories !== cur;
+  const adj = (a.adjustments || []).map((x) =>
+    `<li><span>${escapeHtml(x.change)}</span><span class="coach__delta ${x.deltaKcal < 0 ? 'neg' : x.deltaKcal > 0 ? 'pos' : ''}">${x.deltaKcal > 0 ? '+' : ''}${x.deltaKcal} kcal</span></li>`).join('');
+
+  $('#coachBody').innerHTML = `
+    <div class="coach__verdict coach__verdict--${V.c}">${V.t}</div>
+    <p class="coach__assessment">${escapeHtml(a.assessment)}</p>
+    ${adj ? `<div class="coach__section"><span class="eyebrow">Vorgeschlagene Anpassungen</span><ul class="coach__adjust">${adj}</ul></div>` : ''}
+    <div class="coach__target">
+      <div><span class="eyebrow">Neues Tagesziel</span><span class="coach__kcal">${fmtInt(a.newPlanCalories)} kcal</span></div>
+      ${changed ? `<button class="btn btn--primary" id="applyCoach">Übernehmen</button>` : `<span class="coach__ok">bereits gesetzt ✓</span>`}
+    </div>
+    ${a.summary ? `<p class="coach__summary">${escapeHtml(a.summary)}</p>` : ''}
+    <p class="coach__model">erzeugt mit ${escapeHtml(a.model || 'Claude')}</p>`;
+
+  if (changed) $('#applyCoach').addEventListener('click', async () => {
+    try {
+      STATE = await api('/api/config', { method: 'PUT', body: JSON.stringify({ planCalories: a.newPlanCalories }) });
+      render();
+      closeModal($('#coachModal'));
+      toast(`Neues Tagesziel: ${fmtInt(a.newPlanCalories)} kcal ✓`);
+    } catch (e) { toast(e.message, true); }
+  });
+}
+
 function escapeHtml(s) {
   return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 }

@@ -89,6 +89,24 @@ Dann fragt die Web-App beim ersten Aufruf einmal danach.
 
 ---
 
+## KI-Coach (optional)
+
+Der Button **🤖 KI-Coach: Plan anpassen** (im Essensplan) schickt deine
+Trend-/Erhaltungs-Analyse und deinen Essensplan an **Claude** und bekommt eine
+kurze Bewertung plus **konkrete Plan-Anpassungen** zurück (z. B. „Reis 80 g → 60 g,
+dafür 30 g mehr Hähnchen"), damit du dein Wochenziel triffst. Das neue Kalorienziel
+kannst du per Klick übernehmen.
+
+Dafür brauchst du einen **Anthropic-API-Schlüssel**
+([console.anthropic.com](https://console.anthropic.com/settings/keys)) als
+Umgebungsvariable `ANTHROPIC_API_KEY` (lokal in `.env`, online bei Vercel). Ohne
+Schlüssel läuft die App normal – nur der Coach-Button meldet dann, dass er nicht
+konfiguriert ist. Modell wählbar über `COACH_MODEL` (Standard `claude-opus-4-8`;
+günstiger: `claude-sonnet-5` oder `claude-haiku-4-5`). Kosten pro Analyse liegen
+im Bereich weniger Cent.
+
+---
+
 ## Online stellen (GitHub + Vercel)
 
 Damit du vom Handy zugreifen kannst. Deine Secrets (`.env`, `credentials/`) bleiben
@@ -109,6 +127,7 @@ dank `.gitignore` außen vor – auf Vercel kommen sie als Umgebungsvariablen re
    | `GOOGLE_SHEET_ID` | deine Sheet-ID |
    | `GOOGLE_CREDENTIALS_JSON` | **kompletter Inhalt** deiner `service-account.json` (in einer Zeile) |
    | `APP_PASSWORD` | ein selbst gewähltes Passwort (die URL ist öffentlich!) |
+   | `ANTHROPIC_API_KEY` | *(optional)* für den KI-Coach – Schlüssel von console.anthropic.com |
 
 4. **Deploy** klicken. Nach ~1 Min bekommst du eine URL wie
    `https://weight-coach-xyz.vercel.app`.
