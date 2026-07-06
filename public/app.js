@@ -2,6 +2,7 @@
 //  app.js — lädt den Zustand, rendert das Dashboard, verdrahtet die Formulare.
 // ─────────────────────────────────────────────────────────────────────────
 import { renderWeightChart, renderCompositionChart, renderCalorieChart, renderGauge, sparklineSVG } from './charts.js';
+import { MEAL_PLAN } from './mealplan.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -242,9 +243,48 @@ $('#settingsForm').addEventListener('submit', async (e) => {
     STATE = await api('/api/config', { method: 'PUT', body: JSON.stringify(body) });
     closeModal($('#settingsModal'));
     render();
-    toast('Plan aktualisiert ✓');
+    toast('Einstellungen gespeichert ✓');
   } catch (err) { toast(err.message, true); }
 });
+
+// ── Essensplan ───────────────────────────────────────────────────────────────
+function renderPlan() {
+  const planKcal = STATE?.config?.planCalories ?? MEAL_PLAN.totalKcal;
+  $('#planTotalKcal').textContent = fmtInt(MEAL_PLAN.totalKcal);
+  $('#planTotalProt').textContent = (MEAL_PLAN.proteinApprox ? '~' : '') + MEAL_PLAN.totalProtein;
+  $('#planMeta').textContent = MEAL_PLAN.meta;
+  $('#planMeals').innerHTML = MEAL_PLAN.meals.map((m) => `
+    <article class="meal">
+      <div class="meal__head">
+        <span class="meal__icon">${m.icon}</span>
+        <span class="meal__name">${escapeHtml(m.name)}</span>
+        <span class="meal__macros"><b>${fmtInt(m.kcal)}</b> kcal</span>
+      </div>
+      <ul class="meal__items">${m.items.map((i) =>
+        `<li><span>${escapeHtml(i.n)}</span><span class="meal__ik">${fmtInt(i.kcal)}</span></li>`).join('')}</ul>
+    </article>`).join('')
+    + (MEAL_PLAN.extras ? `<p class="plan__extras">${escapeHtml(MEAL_PLAN.extras)}</p>` : '');
+  $('#logPlan').textContent = `Heute als gegessen loggen · ${fmtInt(planKcal)} kcal`;
+}
+
+$('#openPlan').addEventListener('click', () => { renderPlan(); openModal('planModal'); });
+
+$('#logPlan').addEventListener('click', async () => {
+  const date = todayISO();
+  // bestehenden Tageswert bewahren – nur die Kalorien setzen (Gewicht bleibt).
+  const existing = STATE.entries.find((e) => e.date === date) || { date };
+  const kcal = STATE.config.planCalories ?? MEAL_PLAN.totalKcal;
+  try {
+    STATE = await api('/api/entries', { method: 'POST', body: JSON.stringify({ ...existing, date, calories: kcal }) });
+    closeModal($('#planModal'));
+    render();
+    toast(`Plan geloggt · ${fmtInt(kcal)} kcal ✓`);
+  } catch (err) { toast(err.message, true); }
+});
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
 
 // ── Toast ────────────────────────────────────────────────────────────────────
 let toastT;

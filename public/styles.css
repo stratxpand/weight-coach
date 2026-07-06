@@ -307,6 +307,37 @@ body {
 .advanced summary { font-family: var(--font-mono); font-size: .74rem; color: var(--ink-2); cursor: pointer; letter-spacing: .03em; }
 .advanced__grid { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; margin-top: .8rem; }
 
+/* ── Essensplan-Modal ───────────────────────────────────────────────────── */
+.btn--block { width: 100%; justify-content: center; }
+.btn__ico { font-size: 1.02em; }
+
+.plansum { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+  padding: .1rem 0 1rem; border-bottom: 1px solid var(--line); margin-bottom: 1rem; }
+.plansum__totals { display: flex; align-items: baseline; gap: 1.1rem; }
+.plansum__big { font-family: var(--font-mono); font-weight: 700; font-size: 2.1rem; letter-spacing: -.02em; color: var(--gold); font-variant-numeric: tabular-nums; }
+.plansum__big em { font-size: .85rem; color: var(--ink-3); font-style: normal; margin-left: .3rem; }
+.plansum__prot { font-family: var(--font-mono); color: var(--ink-2); font-size: .92rem; }
+.plansum__meta { font-family: var(--font-mono); font-size: .7rem; color: var(--ink-3); margin: 0; width: 100%; }
+
+.meals { display: flex; flex-direction: column; gap: .7rem; }
+.meal { background: rgba(255,255,255,.02); border: 1px solid var(--line); border-radius: var(--r); padding: .8rem .9rem; }
+.meal__head { display: flex; align-items: center; gap: .5rem; margin-bottom: .55rem; }
+.meal__icon { font-size: 1rem; }
+.meal__name { font-weight: 600; font-size: .92rem; flex: 1; }
+.meal__macros { font-family: var(--font-mono); font-size: .78rem; color: var(--ink-2); white-space: nowrap; }
+.meal__macros b { color: var(--gold); font-weight: 600; }
+.meal__items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.meal__items li { display: flex; justify-content: space-between; gap: 1rem; font-size: .82rem; color: var(--ink-2); padding: .2rem 0; border-top: 1px solid rgba(255,255,255,.04); }
+.meal__items li:first-child { border-top: none; }
+.meal__ik { font-family: var(--font-mono); color: var(--ink-3); white-space: nowrap; }
+.plan__extras { font-family: var(--font-mono); font-size: .74rem; color: var(--ink-3); margin: .9rem 0 0; text-align: center; }
+
+/* Kopf fix, Mahlzeiten scrollen, Log-Button fix am unteren Rand */
+.modal__card--plan { display: flex; flex-direction: column; overflow: hidden; }
+.modal__card--plan .modal__head { flex: 0 0 auto; }
+.plan__body { flex: 1 1 auto; overflow-y: auto; min-height: 0; margin-right: -.4rem; padding-right: .4rem; }
+.plan__log { flex: 0 0 auto; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+
 /* ── Loader / Toast ─────────────────────────────────────────────────────── */
 .loader { position: fixed; inset: 0; display: grid; place-items: center; gap: 1rem; color: var(--ink-3); font-family: var(--font-mono); font-size: .8rem; z-index: 40; }
 .loader[hidden] { display: none; }
@@ -328,15 +359,17 @@ body {
   .tiles { grid-template-columns: 1fr 1fr; }
   .grid2 { grid-template-columns: 1fr; }
 }
+@media (max-width: 640px) {
+  #backendPill, #datePill { display: none; }
+}
 @media (max-width: 560px) {
   .brand__sub { display: none; }
-  .topbar { padding: .8rem 1rem; }
-  .btn--primary .btn__plus + * {}
+  .topbar { padding: .8rem 1rem; gap: .5rem; }
+  .btn--plan .btn__lbl { display: none; }
   .tiles { grid-template-columns: 1fr 1fr; }
   .form, .advanced__grid { grid-template-columns: 1fr; }
   .progresspanel__row { grid-template-columns: 1fr; text-align: center; gap: .8rem; }
   .hero__kcal { font-size: 3.4rem; }
-  .datePill { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
