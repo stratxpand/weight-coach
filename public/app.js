@@ -131,6 +131,10 @@ function renderWeekTable(a) {
     const dcls = w.calorieDelta > 0 ? 'chip--up' : w.calorieDelta < 0 ? 'chip--down' : 'chip--flat';
     const dtxt = w.calorieDelta === 0 ? '±0' : `${w.calorieDelta > 0 ? '+' : '−'}${Math.abs(w.calorieDelta)}`;
     const rate = `${w.observedRate < 0 ? '−' : '+'}${fmt2(Math.abs(w.observedRate))}`;
+    const why = w.hold === 'adaptation'
+      ? `Anlaufphase: ${fmt2(w.waterKg)} kg der Abnahme als Wasser/Glykogen verbucht – Ziel bewusst gehalten`
+      : w.hold === 'tolerance' ? 'Abweichung im Toleranzband – Ziel gehalten'
+      : w.tooFast ? 'Abnahme zu schnell – Ziel angehoben' : '';
     return `<tr>
       <td class="wk">${w.index}</td>
       <td>${germanDate(w.weekStart).slice(0, 6)}–${germanDate(w.weekEnd).slice(0, 6)}</td>
@@ -138,7 +142,7 @@ function renderWeekTable(a) {
       <td class="num">${rate} kg/W</td>
       <td class="num">${fmtInt(w.maintenanceSmoothed)}</td>
       <td class="num">${fmtInt(w.targetCalories)}</td>
-      <td class="num"><span class="chip ${dcls}">${dtxt}</span></td>
+      <td class="num"><span class="chip ${dcls}"${why ? ` title="${why}"` : ''}>${dtxt}</span></td>
     </tr>`;
   }).join('');
 }
